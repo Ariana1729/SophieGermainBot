@@ -1,0 +1,14 @@
+{
+  "name": "Sophie",
+  "version": "1.0.0",
+  "description": "Sophie Germain bot",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Ariana",
+  "license": "ISC",
+  "dependencies": {
+    "telebot": "^1.2.6"
+  }
+}
