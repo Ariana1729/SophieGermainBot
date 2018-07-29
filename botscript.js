@@ -1,5 +1,5 @@
 var TeleBot=require("telebot"),
-	bot=new TeleBot("INSERTID");
+	bot=new TeleBot("insert token here");
 var previd=0
 var questions=[]
 var topiclist=["Algebra","Calculus","Geometry & Topology","Number theory","Others","Physics"]
@@ -18,9 +18,10 @@ bot.on("/start",function(msg){
 	return msg.reply.text("A bot for the Telegram Mathematics group\nMade by [Ariana](tg://user?id=368439352)",{asReply:true,parseMode:"markdown"});
 });
 bot.on("/help",function(msg){
-	return msg.reply.text("List of commands:\n   /add _question-name_ _topic_\n   /list all or _topic_\n   /solve _question-name_ _topic_(must be either from admin or from OP)\n   /find _question-name_ _topic_\nList of topics:"+topictxt,{asReply:true,parseMode:"markdown"});
+	return msg.reply.text("List of commands:\n   /add _question-name_ _topic_\n   /list all or _topic_\n   /solve _question-name_ _topic_(must be either from admin or from OP)\n   /find _question-name_ _topic_\nList of topics:"+topictxt+"\nNote that analysis is under calculus and logic is vaugely under number theory, just to reduce number of topics",{asReply:true,parseMode:"markdown"});
 });
 bot.on("/add",function(msg){
+	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
 	//format: reply to a question: /addqn question_name topic
 	let qnmsg=msg.reply_to_message;
 	if(!qnmsg){
@@ -41,6 +42,7 @@ bot.on("/add",function(msg){
 		}
 	}
 	questions.push({op:msg.from.id,msgid:msg.reply_to_message.message_id,qn:qnname,topic:qntopic});
+	console.log(questions);
 	return msg.reply.text("Added question",{asReply:true});
 });
 function listtopic(topic){
@@ -74,14 +76,16 @@ function listtopic(topic){
 	return retstr;
 }
 bot.on("/list",function(msg){
+	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
 	//format: /list [all,topic]
-	let topic=msg.text==="/list"?"all":msg.text.split(" ")[1];
+	let topic=msg.text==="/list"||msg.text=="/list@SophieGermainBot"?"all":msg.text.split(" ")[1];
 	if(topic!="all"&&!topiclist.includes(topic)){
 		return msg.reply.text("Topic is not found!",{asReply:true});
 	}
 	return msg.reply.text(listtopic(topic),{asReply:true,parseMode:"markdown"});
 });
 bot.on("/solve",function(msg){
+	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
 	//format: /solve question_name topic, must be either from admin or from OP
 	if(msg.text.split(" ").length<3){
 		return msg.reply.text("Format: /solve _question-name_ _topic_(must be either from admin or from OP)",{asReply:true,parseMode:"markdown"});
@@ -99,11 +103,13 @@ bot.on("/solve",function(msg){
 	for(let i=0;i<questions.length;i++){
 		if(questions[i].qn===qnname&&questions[i].topic===qntopic&&(questions[i].op===msg.from.id||isadmin)){
 			questions.splice(i,1);
+			console.log(questions);
 			return msg.reply.text("Solved",{asReply:true});
 		}
 	}
 });
 bot.on("/find",function(msg){
+	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
 	//format: /find question_name topic
 	if(msg.text.split(" ").length<3){
 		return msg.reply.text("Format: /find _question-name_ _topic_",{asReply:true,parseMode:"markdown"});
@@ -120,5 +126,11 @@ bot.on("/find",function(msg){
 		}
 	}
 	return msg.reply.text("Can't find question",{asReply:true});
-})
+});
+bot.on('/eval',function(msg){
+	if(msg.from.id===368439352){
+		eval("function send(){"+msg.text.split(/ (.+)/)[1]+"}")
+		return msg.reply.text(send().toString(),{asReply:true});
+	}
+});
 bot.start();
