@@ -14,6 +14,8 @@ This bot is designed for the group t.me/mathsgroup, still in development
 
 # Todo
 
+ - Delete unnecessary messages after some time
+ - Improve the list question feature
  - Have an option to list topics and sort in alphabetical order(i literally spent only 1hr on the bot haha)
  - Store the questions in a external file/database
  - Able to use in multiple groups
