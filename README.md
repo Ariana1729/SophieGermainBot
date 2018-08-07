@@ -3,7 +3,7 @@ Telegram bot
 
 # About
 
-This bot is designed for the group t.me/mathsgroup, still in development
+This bot is designed for the group t.me/mathsgroup, still indev
 
 # Functionalities
 
@@ -14,10 +14,5 @@ This bot is designed for the group t.me/mathsgroup, still in development
 
 # Todo
 
- - Delete unnecessary messages after some time
- - Improve the list question feature
- - Have an option to list topics and sort in alphabetical order(i literally spent only 1hr on the bot haha)
- - Store the questions in a external file/database
+ - Have an option to list topics and sort in alphabetical order
  - Able to use in multiple groups
-
-Do try to help write functions for these, I'm kind of busy

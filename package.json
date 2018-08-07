@@ -9,6 +9,7 @@
   "author": "Ariana",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^3.1.1",
     "telebot": "^1.2.6"
   }
 }

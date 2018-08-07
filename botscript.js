@@ -1,136 +1,157 @@
 var TeleBot=require("telebot"),
-	bot=new TeleBot("insert token here");
-var previd=0
-var questions=[]
-var topiclist=["Algebra","Calculus","Geometry & Topology","Number theory","Others","Physics"]
-var topictxt=""
-for(let i=0;i<topiclist.length;i++){
-	topictxt+="   \n"+topiclist[i];
-}
-bot.on('*',function(msg){
-	if(previd!=msg.chat.id){
-		console.log(msg.chat.id+" :");
-		previd=msg.chat.id;
-	}
-	console.log("   "+msg.from.first_name+"("+msg.from.id+") - "+msg.text);
-});
-bot.on("/start",function(msg){
-	return msg.reply.text("A bot for the Telegram Mathematics group\nMade by [Ariana](tg://user?id=368439352)",{asReply:true,parseMode:"markdown"});
-});
-bot.on("/help",function(msg){
-	return msg.reply.text("List of commands:\n   /add _question-name_ _topic_\n   /list all or _topic_\n   /solve _question-name_ _topic_(must be either from admin or from OP)\n   /find _question-name_ _topic_\nList of topics:"+topictxt+"\nNote that analysis is under calculus and logic is vaugely under number theory, just to reduce number of topics",{asReply:true,parseMode:"markdown"});
-});
-bot.on("/add",function(msg){
-	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
-	//format: reply to a question: /addqn question_name topic
-	let qnmsg=msg.reply_to_message;
-	if(!qnmsg){
-		return msg.reply.text("Please reply the question with your message",{asReply:true});
-	}
-	if(msg.text.split(" ").length<3){
-		return msg.reply.text("Format: /add _question-name_ _topic_",{asReply:true,parseMode:"markdown"});
-	}
-	let tmp=msg.text.split(/\ (?=[^\ ]+$)/);
-	let qntopic=tmp[1];
-	if(!topiclist.includes(qntopic)){
-		return msg.reply.text("Topic is not found!",{asReply:true});
-	}
-	let qnname=tmp[0].split(/ (.+)/)[1];
-	for(let i=0;i<questions.length;i++){
-		if(questions[i].qn===qnmsg&&questions[i].topic===qntopic){
-			return msg.reply.text("A question with the same name and topic is still unanswered, please rename your question",{asReply:true});
-		}
-	}
-	questions.push({op:msg.from.id,msgid:msg.reply_to_message.message_id,qn:qnname,topic:qntopic});
-	console.log(questions);
-	return msg.reply.text("Added question",{asReply:true});
-});
-function listtopic(topic){
-	if(topic==="all"){
-		let topicqnstr=[];
-		let retstr="";
-		for(let i=0;i<topiclist.length;i++){
-			topicqnstr.push("*"+topiclist[i]+"*\n");
-		}
-		for(let i=0;i<questions.length;i++){
-			topicqnstr[topiclist.indexOf(questions[i].topic)]+="   "+questions[i].qn+"\n";
-		}
-		for(let i=0;i<topicqnstr.length;++i){
-			if(topicqnstr[i]!="*"+topiclist[i]+"*\n"){
-				retstr+=topicqnstr[i];
-			}else{
-				retstr+="No questions for "+topicqnstr[i];
-			}
-		}
-		return retstr;
-	}
-	retstr=""
-	for(i=0;i<questions.length;i++){
-		if(questions[i].topic===topic){
-			retstr+="   "+questions[i].qn+"\n";
-		}
-	}
-	if(retstr===""){
-		retstr="No questions for "+topic;
-	}
-	return retstr;
-}
-bot.on("/list",function(msg){
-	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
-	//format: /list [all,topic]
-	let topic=msg.text==="/list"||msg.text=="/list@SophieGermainBot"?"all":msg.text.split(" ")[1];
-	if(topic!="all"&&!topiclist.includes(topic)){
-		return msg.reply.text("Topic is not found!",{asReply:true});
-	}
-	return msg.reply.text(listtopic(topic),{asReply:true,parseMode:"markdown"});
-});
-bot.on("/solve",function(msg){
-	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
-	//format: /solve question_name topic, must be either from admin or from OP
-	if(msg.text.split(" ").length<3){
-		return msg.reply.text("Format: /solve _question-name_ _topic_(must be either from admin or from OP)",{asReply:true,parseMode:"markdown"});
-	}
-	let isadmin;
-	bot.getChatMember(msg.chat.id,msg.from.id).then(function(data){
-		isadmin=(data.status==="creator")||(data.status==="administrator");
-	});
-	let tmp=msg.text.split(/\ (?=[^\ ]+$)/);
-	let qntopic=tmp[1];
-	if(!topiclist.includes(qntopic)){
-		return msg.reply.text("Topic is not found!",{asReply:true});
-	}
-	let qnname=tmp[0].split(/ (.+)/)[1];
-	for(let i=0;i<questions.length;i++){
-		if(questions[i].qn===qnname&&questions[i].topic===qntopic&&(questions[i].op===msg.from.id||isadmin)){
-			questions.splice(i,1);
-			console.log(questions);
-			return msg.reply.text("Solved",{asReply:true});
-		}
-	}
-});
-bot.on("/find",function(msg){
-	if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})};
-	//format: /find question_name topic
-	if(msg.text.split(" ").length<3){
-		return msg.reply.text("Format: /find _question-name_ _topic_",{asReply:true,parseMode:"markdown"});
-	}
-	let tmp=msg.text.split(/\ (?=[^\ ]+$)/);
-	let qntopic=tmp[1];
-	if(!topiclist.includes(qntopic)){
-		return msg.reply.text("Topic is not found!",{asReply:true});
-	}
-	let qnname=tmp[0].split(/ (.+)/)[1];
-	for(let i=0;i<questions.length;i++){
-		if(questions[i].qn===qnname&&questions[i].topic===qntopic){
-			return bot.sendMessage(msg.chat.id,"Here is the question",{replyToMessage:questions[i].msgid});
-		}
-	}
-	return msg.reply.text("Can't find question",{asReply:true});
-});
-bot.on('/eval',function(msg){
-	if(msg.from.id===368439352){
-		eval("function send(){"+msg.text.split(/ (.+)/)[1]+"}")
-		return msg.reply.text(send().toString(),{asReply:true});
-	}
+    bot=new TeleBot("TOKEN"),
+    MongoClient=require('mongodb').MongoClient,
+    url='mongodb://localhost:27017';
+MongoClient.connect(url,function(err,client){
+    if(err){return console.log(err);}
+    console.log("Connected to DB");
+    var db=client.db("db");
+    var questions=db.collection("questions");
+    questions.deleteMany({},function(err,res){if(err){return console.log(err);}});
+    var previd=0,topiclist=["Algebra","Calculus","Geometry & Topology","Number theory","Others","Physics"],groupid=-1001062964615,topictxt="";
+    for(let i=0;i<topiclist.length;i++){
+        topictxt+="   \n"+topiclist[i];
+    }
+    function sendtmpmsg(fmsg,msg){
+        return bot.sendMessage(fmsg.chat.id,msg,{replyToMessage:fmsg.message_id,parseMode:"markdown",notification:false}).then(function(smsg){
+            return setTimeout(function(err){
+                if(err){return console.log(err);}
+                bot.deleteMessage(fmsg.chat.id,smsg.message_id);
+            },10000);
+        });
+    }
+    bot.on("*",function(msg){
+        if(previd!=msg.chat.id){
+            console.log(msg.chat.id+" :");
+            previd=msg.chat.id;
+        }
+        console.log("   "+msg.from.first_name+"("+msg.from.id+") - "+msg.text);
+    });
+    bot.on("/start",function(msg){
+        let sentmsg=msg.reply.text("A bot for the [Telegram Mathematics group](t.me/mathsgroup)\nMade by [Ariana](tg://user?id=368439352)",{asReply:true,parseMode:"markdown"});
+        if(msg.chat.id==-1001062964615){
+            setTimeout(function(){
+                bot.deleteMessage(-1001062964615,sentmsg);
+            },10000);
+        }
+        return 0;
+    });
+    bot.on("/help",function(msg){
+        let sentmsg=bot.sendMessage(msg.chat.id,"List of commands:\n   /add _question-name_ _topic_\n   /list all or _topic_\n   /solve _question-name_ _topic_(must be either from admin or from OP)\n   /find _question-name_ _topic_\nList of topics:"+topictxt+"\nNote that analysis is under calculus and logic is vaugely under number theory, just to reduce number of topics",{replyToMessage:msg.message_id,parseMode:"markdown"});
+        if(msg.chat.id==-1001062964615){
+            return setTimeout(function(){
+                bot.deleteMessage(-1001062964615,sentmsg);
+            },10000);
+        }
+        return 0;
+    });
+    bot.on("/add",function(msg){
+        //if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        //format: reply to a question: /addqn question_name topic
+        let qnmsg=msg.reply_to_message;
+        if(!qnmsg){return sendtmpmsg(msg,"*Error*\nPlease reply the question with your message");}
+        if(msg.text.split(" ").length<3){return sendtmpmsg(msg,"*Error*\nFormat: /add _question-name_ _topic_");}
+        let qn=msg.text.split(/ (.+)/)[1];
+        for(let i=0;i<topiclist.length+1;++i){
+            if(qn.endsWith(" "+topiclist[i])){
+                let qnname=qn.substring(0,qn.length-topiclist[i].length-1),qntopic=topiclist[i];
+                if(!topiclist.includes(qntopic)){return sendtmpmsg(msg,"*Error*\nTopic not found");}
+                questions.find({"name":qnname,"topic":qntopic}).toArray(function(err,qn){
+                    if(err){return console.log(err);}
+                    if(qn[0]){return sendtmpmsg(msg,"*Error*\nA question with the same name and topic is still unanswered");}
+                    questions.insert([{"name":qnname,"topic":qntopic,"op":msg.from.id,"msgid":msg.message_id}],function(err,res){
+                        if(err){return console.log(err);}
+                        return msg.reply.text("Added question",{asReply:true});
+                    });
+                });
+            }
+        }
+    });
+    bot.on("/list",function(msg){
+        //format: /list [all,topic]
+        let topic=msg.text=="/list"||msg.text=="/list@SophieGermainBot"?"all":msg.text.split(/ (.+)/)[1];
+        if(topic!="all"&&!topiclist.includes(topic)){return sendtmpmsg(msg,"*Error*\nFormat: /list [all,topic]");}
+        if(topic=="all"){
+            let topicqnstr=[];
+            let retstr="";
+            for(let i=0;i<topiclist.length;i++){
+                topicqnstr.push("*"+topiclist[i]+"*\n");
+            }
+            questions.find({}).toArray(function(err,qnlist){
+                if(err){
+                    retstr="An internal error occurred";
+                    return console.log(err);
+                }
+                for(let i=0;i<qnlist.length;i++){
+                    topicqnstr[topiclist.indexOf(qnlist[i].topic)]+="   "+qnlist[i].name+"\n";
+                }
+                for(let i=0;i<topicqnstr.length;++i){
+                    if(topicqnstr[i]!="*"+topiclist[i]+"*\n"){
+                        retstr+=topicqnstr[i];
+                    }else{
+                        retstr+="No questions for "+topicqnstr[i];
+                    }
+                }
+                return msg.reply.text(retstr,{asReply:true,parseMode:"markdown"});
+            });
+        }else{
+            let retstr="";
+            questions.find({topic:topic}).toArray(function(err,qnlist){
+                if(err){
+                    retstr="An internal error occurred";
+                    return console.log(err);
+                }
+                for(let i=0;i<qnlist.length;++i){
+                    retstr+="   "+qnlist[i].name+"\n"
+                }
+                if(retstr==""){
+                    retstr="No questions for "+topic;
+                }
+                return msg.reply.text(retstr,{asReply:true,parseMode:"markdown"});
+            });
+        }
+    });
+    bot.on("/solve",function(msg){
+        //if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        //format: /solve question_name topic, must be either from admin or from OP
+        if(msg.text.split(" ").length<3){return sendtmpmsg(msg,"*Error*\nFormat: /solve _question-name_ _topic_(must be either from admin or from OP)");}
+        let isadmin;
+        bot.getChatMember(msg.chat.id,msg.from.id).then(function(data){isadmin=(data.status==="creator")||(data.status==="administrator");});
+        let qn=msg.text.split(/ (.+)/)[1];
+        for(let i=0;i<topiclist.length;++i){
+            if(qn.endsWith(" "+topiclist[i])){
+                let qnname=qn.substring(0,qn.length-topiclist[i].length-1),qntopic=topiclist[i];
+                questions.find({"name":qnname,"topic":qntopic}).toArray(function(err,qn){
+                    if(err){return console.log(err);}
+                    if(!qn[0]){return sendtmpmsg(msg,"*Error*\nCan't find question");}
+                    if(!isadmin&&qn[0].op!=msg.from.id){return sendtmpmsg(msg,"*Error*\nThis command can only be executed by OP or an admin.");}
+                    questions.deleteOne({"name":qnname,"topic":qntopic},function(err,res){
+                        if(err){
+                            msg.reply.text("An internal error occurred");
+                            return console.log(err);
+                        }
+                        return msg.reply.text("Question solved");
+                    });
+                });
+            }
+        }
+    });
+    bot.on("/find",function(msg){
+        //if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        //format: /find question_name topic
+        if(msg.text.split(" ").length<3){return sendtmpmsg(msg,"*Error*\nFormat: /find _question-name_ _topic_");}
+        let qn=msg.text.split(/ (.+)/)[1];
+        for(let i=0;i<topiclist.length;++i){
+            if(qn.endsWith(" "+topiclist[i])){
+                let qnname=qn.substring(0,qn.length-topiclist[i].length-1),qntopic=topiclist[i];
+                if(!topiclist.includes(qntopic)){return sendtmpmsg(msg,"*Error*\nTopic not found");}
+                questions.find({"name":qnname,"topic":qntopic}).toArray(function(err,qn){
+                    if(err){return console.log(err);}
+                    if(!qn[0]){return sendtmpmsg(msg,"*Error*\nUnable to find question");}
+                    return bot.sendMessage(msg.chat.id,"Here is the question",{replyToMessage:qn[0].msgid});
+                });
+            }
+        }
+    });
 });
 bot.start();
