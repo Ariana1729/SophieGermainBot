@@ -46,7 +46,7 @@ MongoClient.connect(url,function(err,client){
         return 0;
     });
     bot.on("/add",function(msg){
-        //if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
         //format: reply to a question: /addqn question_name topic
         let qnmsg=msg.reply_to_message;
         if(!qnmsg){return sendtmpmsg(msg,"*Error*\nPlease reply the question with your message");}
@@ -112,7 +112,7 @@ MongoClient.connect(url,function(err,client){
         }
     });
     bot.on("/solve",function(msg){
-        //if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        if(msg.chat.id!=groupid){return msg.reply.text("Please use the telegram math group",{asReply:true})}
         //format: /solve question_name topic, must be either from admin or from OP
         if(msg.text.split(" ").length<3){return sendtmpmsg(msg,"*Error*\nFormat: /solve _question-name_ _topic_(must be either from admin or from OP)");}
         let isadmin;
@@ -137,7 +137,7 @@ MongoClient.connect(url,function(err,client){
         }
     });
     bot.on("/find",function(msg){
-        //if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})}
+        if(msg.chat.id!=-1001062964615){return msg.reply.text("Please use the telegram math group",{asReply:true})}
         //format: /find question_name topic
         if(msg.text.split(" ").length<3){return sendtmpmsg(msg,"*Error*\nFormat: /find _question-name_ _topic_");}
         let qn=msg.text.split(/ (.+)/)[1];
